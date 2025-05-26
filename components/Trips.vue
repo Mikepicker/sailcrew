@@ -47,11 +47,11 @@
                         <div class="flex flex-col gap-2">
                             <div class="flex gap-2">
                                 <UIcon name="mdi-pirate" class="size-5" />
-                                <div>{{ crewsStore.get(item.crewId).name }}</div>
+                                <div>{{ getCrewName(item.crewId) }}</div>
                             </div>
                             <div class="flex gap-2">
                                 <UIcon name="gis-pirate-map" class="size-5" />
-                                <div>{{ routesStore.get(item.routeId).name }}</div>
+                                <div>{{ getRouteName(item.routeId) }}</div>
                             </div>
                         </div>
 
@@ -157,5 +157,15 @@ const openJournal = (trip) => {
 const openChecklist = (trip) => {
     checklistOpen.value = true
     currentTrip.value = trip
+}
+
+const getRouteName = (id) => {
+    const route = routesStore.get(id)
+    return route ? route.name : 'Not Set!'
+}
+
+const getCrewName = (id) => {
+    const crew = crewsStore.get(id)
+    return crew ? crew.name : 'Not Set!'
 }
 </script>

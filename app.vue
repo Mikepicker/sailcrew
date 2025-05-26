@@ -15,5 +15,4 @@ tripsStore.load()
 
 const sailSyncStore = useSailSyncStore()
 sailSyncStore.load()
-sailSyncStore.startSync()
 </script>

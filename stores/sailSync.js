@@ -6,6 +6,23 @@ export const useSailSyncStore = defineStore('sailSyncStore', {
         sailSyncPassword: '',
     }),
     actions: {
+        async fetchResource(path) {
+            if (!this.sailSyncUrl || !this.sailSyncPort) return
+
+            const response = await fetch(`http://${this.sailSyncUrl}:${this.sailSyncPort}/${path}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Basic ' + btoa(this.sailSyncUsername + ':' + this.sailSyncPassword),
+                }
+            })
+
+            if (response.ok) {
+                return await response.json()
+            } else {
+                console.error(`❌ Failed to fetch resource from SailSync. Status: ${response.status}`)
+                return null
+            }
+        },
         saveConfig(sailSyncUrl, sailSyncPort, sailSyncUsername, sailSyncPassword) {
             this.sailSyncUrl = sailSyncUrl
             this.sailSyncPort = sailSyncPort
@@ -20,13 +37,30 @@ export const useSailSyncStore = defineStore('sailSyncStore', {
             this.storeOnSailSync('crews', crewsStore.crews)
             this.storeOnSailSync('routes', routesStore.routes)
         },
-        load() {
+        async load() {
             const config = JSON.parse(localStorage.getItem('sailSync'))
             if (config) {
                 this.sailSyncUrl = config.sailSyncUrl
                 this.sailSyncPort = config.sailSyncPort
                 this.sailSyncUsername = config.sailSyncUsername
                 this.sailSyncPassword = config.sailSyncPassword
+
+                const routes = await this.fetchResource('routes')
+                if (routes) {
+                    const routesStore = useRoutesStore()
+                    routesStore.routes = routes
+                }
+                const crews = await this.fetchResource('crews')
+                if (crews) {
+                    const crewsStore = useCrewsStore()
+                    crewsStore.crews = crews
+                }
+                const trips = await this.fetchResource('trips')
+                if (trips) {
+                    const tripsStore = useTripsStore()
+                    tripsStore.trips = trips
+                }
+                this.startSync()
             }
         },
         async storeOnSailSync(path, data) {
@@ -48,6 +82,7 @@ export const useSailSyncStore = defineStore('sailSyncStore', {
             }
         },
         async startSync() {
+            console.log('SailSync started')
             const tripsStore = useTripsStore()
             const crewsStore = useCrewsStore()
             const routesStore = useRoutesStore()
